@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="../../css/api.css" />
+    <style>
+        body {}
+    </style>
+</head>
+
+<body>
+
+</body>
+
+<script type="text/javascript" src="./TXLivePlayerCh.js"></script>
+<script type="text/javascript">
+
+    /*
+        1> 这是一个frame
+
+        2> 里面有一个播放器
+
+        3> frame在父窗口对应的哪个位置，在open_frame由调用者决定
+
+        4> 播放器的位置，也是由调用者决定，播放器的父窗口就是这个frame。
+            播放器的位置，都是相对这个frame来说的
+
+        5> 其它窗口调用这个frame方法：
+            api.openFrame({
+                name: 'vch1',
+                url: './frm_video_ch.html',
+                rect: pageparams.ch1_big.frm_rect,
+                pageParam: {
+                    // 下面是必填项 
+                    player_rect_small: { // 播放器的位置
+                    },
+                    player_rect_fullscreen: { // 播放器全屏
+                    },
+                    frame_name: 'vch1', // 这项和name这一项是一样的
+                    url:'', // 播放器播放的地址
+                }
+            });
+
+        6> 调用窗口发命令到这个frame, 有如下几条
+            1> frm_video_ch__play_cmd
+                开始播放视频，会带有一个url参数
+            2> frm_video_ch__playstop_cmd
+                停止播放视频
+            3> frm_video_ch__display_fullscreen_cmd
+                播放器全屏显示
+            4> frm_video_ch__display_normal_cmd
+                播放器正常显示
+            5> frm_video_ch__playerquit_cmd
+                播放器关闭，释放所有资源
+        7> 依赖
+            此frame是强依赖TXLivePlayerCh.js的
+
+        8> TODO
+            1> 调用窗口，实现反馈机制
+            2> frame窗口，全屏的没有给出
+        
+        9> 如何快速使用起来
+            在调用窗口中，打开这个 frame 然后指定url发消息即可
+            实现
+            ```
+            xxx行愈远，去无穷
+            ```
+    */
+    var pageparams = {
+        model_TXLivePlayerCh: '',
+        player_rect_small: {
+        },
+        player_rect_fullscreen: {
+        },
+        frame_name: '',
+        url: '',
+        player_is_fullscreen: false,
+    };
+
+    function pageparams_init() {
+    }
+
+    function models_init() {
+        pageparams.model_TXLivePlayerCh = api.require('TXLivePlayer');
+    }
+
+    apiready = function () {
+        pageparams_init();
+        models_init();
+        pageparams.frm_rect = api.pageParam.frm_rect;
+        pageparams.player_rect_small = api.pageParam.player_rect_small;
+        pageparams.player_rect_fullscreen = api.pageParam.player_rect_fullscreen;
+        pageparams.frame_name = api.pageParam.frame_name;
+        pageparams.url = api.pageParam.url;
+        TXLivePlayerCh__config();
+    };
+
+    /*--------------- 其它窗口调用的接口API ----------------*/
+    function frm_video_ch__play_cmd(url) {
+        pageparams.url = url;
+        console.log("frm_video_ch__play_cmd");
+        TXLivePlayerCh__playWithUrl();
+    }
+    function frm_video_ch__playstop_cmd() {
+        console.log("frm_video_ch__playstop_cmd");
+        TXLivePlayerCh__stopPlay();
+    }
+    function frm_video_ch__display_fullscreen_cmd() {
+        console.log("frm_video_ch__display_fullscreen_cmd");
+        console.log(JSON.stringify(pageparams.player_rect_fullscreen));
+        api.openFrame({
+            name: pageparams.frame_name,
+            rect: pageparams.player_rect_fullscreen,
+        });
+        TXLivePlayerCh__display_fullscreen();
+    }
+    function frm_video_ch__display_normal_cmd() {
+        console.log("frm_video_ch__display_normal_cmd");
+        TXLivePlayerCh__display_normal();
+        api.openFrame({
+            name: pageparams.frame_name,
+            rect: pageparams.frm_rect,
+        });
+    }
+
+    function frm_video_ch__playerquit_cmd() {
+        console.log("frm_video_ch__playerquit_cmd");
+        TXLivePlayerCh__closePlayer();
+    }
+
+</script>
+
+</html>
